@@ -1,29 +1,31 @@
-import type { Response, Request } from "express"
+import type { Response, Request, NextFunction } from "express"
 import { getFirestore } from "firebase-admin/firestore"
-
-// type User = {
-//   id: string
-//   name: string
-//   email: string
-// }
+import { ValidationError } from "../errors/validation.error"
+import { NotFoundError } from "../errors/not-found.error"
 
 export class UserController {
-  static async getAll(req: Request, res: Response) {
-    const snapshot = await getFirestore().collection("users").get()
+  static async getAll(req: Request, res: Response, next: NextFunction) {
+    try {
+      const snapshot = await getFirestore().collection("users").get()
 
-    const users = snapshot.docs.map((doc) => {
-      return {
-        id: doc.id,
-        ...doc.data(),
-      }
-    })
+      const users = snapshot.docs.map((doc) => {
+        return {
+          id: doc.id,
+          ...doc.data(),
+        }
+      })
 
-    res.status(200).json({ users })
+      res.status(200).json({ users })
+    } catch (error) {
+      next(error)
+    }
   }
 
-  static async getById(req: Request, res: Response) {
+  static async getById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params
     const doc = await getFirestore().collection("users").doc(id).get()
+
+    if (!doc.exists) throw new NotFoundError("User not found")
 
     res.status(200).json({
       id: doc.id,
@@ -31,31 +33,51 @@ export class UserController {
     })
   }
 
-  static async save(req: Request, res: Response) {
-    const { name, email } = req.body
+  static async save(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { name, email } = req.body as { name: string; email: string }
 
-    const user = await getFirestore().collection("users").add({ name, email })
+      if (!email || email.trim() === "") {
+        throw new ValidationError("Email obrigatório")
+      }
 
-    res.status(201).json({ id: user.id })
+      const user = await getFirestore().collection("users").add({ name, email })
+
+      res.status(201).json({ id: user.id })
+    } catch (error) {
+      next(error)
+    }
   }
 
-  static async update(req: Request, res: Response) {
+  static async update(req: Request, res: Response, next: NextFunction) {
     const { name, email } = req.body
     const { id } = req.params
 
-    await getFirestore().collection("users").doc(id).set({
-      name,
-      email,
-    })
+    const docRef = getFirestore().collection("users").doc(id)
 
-    res.status(201).json({})
+    if ((await docRef.get()).exists) {
+      await docRef.set({
+        name,
+        email,
+      })
+
+      res.status(201).send({
+        message: "User updated",
+      })
+    } else {
+      throw new NotFoundError("User not found")
+    }
   }
 
-  static async destroy(req: Request, res: Response) {
-    const { id } = req.params
+  static async destroy(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params
 
-    await getFirestore().collection("users").doc(id).delete()
+      await getFirestore().collection("users").doc(id).delete()
 
-    res.status(204).json()
+      res.status(204)
+    } catch (error) {
+      next(error)
+    }
   }
 }
