@@ -1,4 +1,5 @@
 import type { Response, Request } from "express"
+import { getFirestore } from "firebase-admin/firestore"
 
 type User = {
   id: number
@@ -6,11 +7,19 @@ type User = {
   email: string
 }
 
-let id = 0
 const users: User[] = []
 
 export class UserController {
-  static getAll(req: Request, res: Response) {
+  static async getAll(req: Request, res: Response) {
+    const snapshot = await getFirestore().collection("users").get()
+
+    const users = snapshot.docs.map((doc) => {
+      return {
+        id: doc.id,
+        ...doc.data(),
+      }
+    })
+
     res.status(200).json({ users })
   }
 
@@ -20,13 +29,12 @@ export class UserController {
     res.status(200).json({ user })
   }
 
-  static save(req: Request, res: Response) {
+  static async save(req: Request, res: Response) {
     const { name, email } = req.body
 
-    const user = { id: ++id, name, email }
-    users.push(user)
+    const user = await getFirestore().collection("users").add({ name, email })
 
-    res.status(201).json({ user })
+    res.status(201).json({ id: user.id })
   }
 
   static update(req: Request, res: Response) {
