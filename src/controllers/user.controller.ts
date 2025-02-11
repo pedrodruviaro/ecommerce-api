@@ -1,13 +1,11 @@
 import type { Response, Request } from "express"
 import { getFirestore } from "firebase-admin/firestore"
 
-type User = {
-  id: number
-  name: string
-  email: string
-}
-
-const users: User[] = []
+// type User = {
+//   id: string
+//   name: string
+//   email: string
+// }
 
 export class UserController {
   static async getAll(req: Request, res: Response) {
@@ -23,10 +21,14 @@ export class UserController {
     res.status(200).json({ users })
   }
 
-  static getById(req: Request, res: Response) {
+  static async getById(req: Request, res: Response) {
     const { id } = req.params
-    const user = users.find((u) => u.id === parseInt(id))
-    res.status(200).json({ user })
+    const doc = await getFirestore().collection("users").doc(id).get()
+
+    res.status(200).json({
+      id: doc.id,
+      ...doc.data(),
+    })
   }
 
   static async save(req: Request, res: Response) {
@@ -37,22 +39,22 @@ export class UserController {
     res.status(201).json({ id: user.id })
   }
 
-  static update(req: Request, res: Response) {
+  static async update(req: Request, res: Response) {
     const { name, email } = req.body
     const { id } = req.params
 
-    const userIdx = users.findIndex((u) => u.id === parseInt(id))
+    await getFirestore().collection("users").doc(id).set({
+      name,
+      email,
+    })
 
-    users[userIdx].name = name
-    users[userIdx].email = email
-
-    res.status(201).json({ user: users[userIdx] })
+    res.status(201).json({})
   }
 
-  static destroy(req: Request, res: Response) {
+  static async destroy(req: Request, res: Response) {
     const { id } = req.params
-    const userIdx = users.findIndex((u) => u.id === parseInt(id))
-    users.splice(userIdx, 1)
+
+    await getFirestore().collection("users").doc(id).delete()
 
     res.status(204).json()
   }
