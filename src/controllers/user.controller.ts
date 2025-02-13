@@ -1,7 +1,7 @@
 import type { Response, Request, NextFunction } from "express"
 import { getFirestore } from "firebase-admin/firestore"
-import { ValidationError } from "../errors/validation.error"
 import { NotFoundError } from "../errors/not-found.error"
+import { User } from "../models/user.model"
 
 export class UserController {
   static async getAll(req: Request, res: Response, next: NextFunction) {
@@ -35,11 +35,7 @@ export class UserController {
 
   static async save(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, email } = req.body as { name: string; email: string }
-
-      if (!email || email.trim() === "") {
-        throw new ValidationError("Email obrigatório")
-      }
+      const { name, email } = req.body as User
 
       const user = await getFirestore().collection("users").add({ name, email })
 
@@ -50,7 +46,7 @@ export class UserController {
   }
 
   static async update(req: Request, res: Response, next: NextFunction) {
-    const { name, email } = req.body
+    const { name, email } = req.body as User
     const { id } = req.params
 
     const docRef = getFirestore().collection("users").doc(id)
