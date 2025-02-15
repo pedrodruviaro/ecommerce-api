@@ -1,43 +1,42 @@
-import { getFirestore } from "firebase-admin/firestore"
 import { User } from "../models/user.model"
+import { UserRepository } from "../repositories/user.repository"
 import { NotFoundError } from "../errors/not-found.error"
 
 export class UserServices {
-  async getAll(): Promise<User[]> {
-    const snapshot = await getFirestore().collection("users").get()
+  private userRepository: UserRepository
 
-    return snapshot.docs.map((doc) => {
-      return {
-        id: doc.id,
-        ...doc.data(),
-      }
-    }) as User[]
+  constructor() {
+    this.userRepository = new UserRepository()
+  }
+
+  async getAll(): Promise<User[]> {
+    return await this.userRepository.getAll()
   }
 
   async getById(id: string): Promise<User> {
-    const doc = await getFirestore().collection("users").doc(id).get()
+    const user = await this.userRepository.getById(id)
 
-    if (!doc.exists) throw new NotFoundError("User not found")
+    if (!user) throw new NotFoundError("User not found")
 
-    return {
-      id: doc.id,
-      ...doc.data(),
-    } as User
+    return user
   }
 
   async save(user: User): Promise<void> {
-    await getFirestore().collection("users").add(user)
+    await this.userRepository.save(user)
   }
 
   async update(id: string, user: User): Promise<void> {
-    const docRef = getFirestore().collection("users").doc(id)
+    const existentUser = await this.userRepository.getById(id)
 
-    if (!(await docRef.get()).exists) throw new NotFoundError("User not found")
+    if (!existentUser) throw new NotFoundError("User not found")
 
-    await docRef.set(user)
+    existentUser.name = user.name
+    existentUser.email = user.email
+
+    await this.userRepository.update(existentUser)
   }
 
   async destroy(id: string): Promise<void> {
-    await getFirestore().collection("users").doc(id).delete()
+    await this.userRepository.destroy(id)
   }
 }
