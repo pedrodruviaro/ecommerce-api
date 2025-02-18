@@ -31,13 +31,17 @@ export class UserRepository {
   }
 
   async save(user: User): Promise<void> {
+    delete user.password // password é gerenciada pelo firebase
     await this.collection.add(user)
   }
 
   async update(user: User): Promise<void> {
     const docRef = this.collection.doc(user.id)
 
-    await docRef.set(user)
+    await docRef.set({
+      name: user.name,
+      email: user.email,
+    })
   }
 
   async destroy(id: string): Promise<void> {
