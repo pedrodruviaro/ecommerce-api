@@ -1,6 +1,6 @@
 import { EmailAlreadyExistsError } from "../errors/email-already-exsists.error"
 import { User } from "../models/user.model"
-import { getAuth, UserRecord } from "firebase-admin/auth"
+import { FirebaseAuthError, getAuth, UserRecord } from "firebase-admin/auth"
 
 export class AuthServices {
   // https://firebase.google.com/docs/auth/admin/manage-users?hl=pt-br
@@ -13,7 +13,10 @@ export class AuthServices {
         displayName: user.name,
       })
       .catch((err) => {
-        if (err.code === "auth/email-already-exists") {
+        if (
+          err instanceof FirebaseAuthError &&
+          err.code === "auth/email-already-exists"
+        ) {
           throw new EmailAlreadyExistsError()
         }
 
