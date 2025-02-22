@@ -10,4 +10,13 @@ export class AuthController {
 
     res.send({ token })
   }
+
+  static async recovery(req: Request, res: Response) {
+    const { email } = req.body
+
+    await new AuthServices().recovery(email)
+
+    // never validate if user exists or not !!!
+    res.end()
+  }
 }

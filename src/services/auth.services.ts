@@ -12,6 +12,7 @@ import {
   signInWithEmailAndPassword,
   getAuth as getFirebaseAuth,
   UserCredential,
+  sendPasswordResetEmail,
 } from "firebase/auth"
 
 export class AuthServices {
@@ -65,5 +66,10 @@ export class AuthServices {
 
   async destroy(id: string) {
     await getAuth().deleteUser(id)
+  }
+
+  async recovery(email: string) {
+    // change email model in firebase console > Authentication > Models > Password Reset
+    await sendPasswordResetEmail(getFirebaseAuth(), email)
   }
 }

@@ -6,8 +6,12 @@ import { ForbiddenError } from "../errors/forbidden.error"
 
 export const authHandler = async (app: Express) => {
   app.use(async (req: Request, res: Response, next: NextFunction) => {
-    // allow login route from authentication
-    if (req.method === "POST" && req.url.startsWith("/auth/login")) {
+    // allow some routes
+    if (
+      req.method === "POST" &&
+      (req.url.startsWith("/auth/login") ||
+        req.url.startsWith("/auth/recovery"))
+    ) {
       return next()
     }
 
