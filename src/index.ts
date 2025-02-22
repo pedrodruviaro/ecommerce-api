@@ -4,6 +4,7 @@ import * as firebaseApp from "firebase/app"
 import { routes } from "./routes"
 import { errorHandler } from "./middlewares/error-handler.middleware"
 import { pageNotFoundHandler } from "./middlewares/page-not-found.middleware"
+import { authHandler } from "./middlewares/auth.middleware"
 
 const PORT = process.env.PORT || 8000
 
@@ -14,6 +15,7 @@ firebaseApp.initializeApp({
 
 const app = express()
 
+authHandler(app)
 routes(app)
 pageNotFoundHandler(app)
 errorHandler(app)
