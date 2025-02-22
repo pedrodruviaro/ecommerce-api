@@ -12,3 +12,8 @@ export const userSchema = Joi.object<User>().keys({
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
 })
+
+export const authLoginSchema = Joi.object<User>().keys({
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).required(),
+})
