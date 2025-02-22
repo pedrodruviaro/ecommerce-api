@@ -2,7 +2,7 @@ import { Router } from "express"
 import { UserController } from "../controllers/user.controller"
 import { celebrate, Segments } from "celebrate"
 import asyncHandler from "express-async-handler"
-import { userSchema } from "../models/user.model"
+import { newUserSchema, updateUserSchema } from "../models/user.model"
 
 const userRoutes = Router()
 
@@ -11,14 +11,14 @@ userRoutes.get("/users/:id", asyncHandler(UserController.getById))
 userRoutes.post(
   "/users",
   celebrate({
-    [Segments.BODY]: userSchema,
+    [Segments.BODY]: newUserSchema,
   }),
   asyncHandler(UserController.save)
 )
 userRoutes.put(
   "/users/:id",
   celebrate({
-    [Segments.BODY]: userSchema,
+    [Segments.BODY]: updateUserSchema,
   }),
   asyncHandler(UserController.update)
 )

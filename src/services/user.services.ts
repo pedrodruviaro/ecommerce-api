@@ -38,6 +38,9 @@ export class UserServices {
     existentUser.name = user.name
     existentUser.email = user.email
 
+    await this.authServices.update(id, user)
+
+    // no password is stored
     await this.userRepository.update(existentUser)
   }
 
