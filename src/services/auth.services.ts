@@ -62,4 +62,8 @@ export class AuthServices {
       throw err
     })
   }
+
+  async destroy(id: string) {
+    await getAuth().deleteUser(id)
+  }
 }

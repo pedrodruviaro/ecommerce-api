@@ -2,6 +2,7 @@ import { User } from "../models/user.model"
 import { UserRepository } from "../repositories/user.repository"
 import { NotFoundError } from "../errors/not-found.error"
 import { AuthServices } from "./auth.services"
+import { FirebaseAuthError } from "firebase-admin/auth"
 
 export class UserServices {
   private userRepository: UserRepository
@@ -45,6 +46,18 @@ export class UserServices {
   }
 
   async destroy(id: string): Promise<void> {
-    await this.userRepository.destroy(id)
+    try {
+      await this.authServices.destroy(id)
+      await this.userRepository.destroy(id)
+      return
+    } catch (error) {
+      if (
+        error instanceof FirebaseAuthError &&
+        error.code === "auth/user-not-found"
+      ) {
+        throw new NotFoundError("User not found")
+      }
+      throw error
+    }
   }
 }

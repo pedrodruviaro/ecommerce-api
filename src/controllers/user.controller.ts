@@ -38,7 +38,8 @@ export class UserController {
     const { id } = req.params
 
     await new UserServices().destroy(id)
+    console.log("cheguei aqui")
 
-    res.status(204)
+    res.status(200).send({ message: "User deleted" })
   }
 }
