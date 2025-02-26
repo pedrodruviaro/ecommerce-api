@@ -1,15 +1,15 @@
 import { User } from "../models/user.model"
 import { UserServices } from "../services/user.services"
-import type { Response, Request, NextFunction } from "express"
+import type { Response, Request } from "express"
 
 export class UserController {
-  static async getAll(req: Request, res: Response, next: NextFunction) {
+  static async getAll(req: Request, res: Response) {
     const users = await new UserServices().getAll()
 
     res.status(200).send(users)
   }
 
-  static async getById(req: Request, res: Response, next: NextFunction) {
+  static async getById(req: Request, res: Response) {
     const { id } = req.params
 
     const user = await new UserServices().getById(id)
@@ -17,7 +17,7 @@ export class UserController {
     res.status(200).send(user)
   }
 
-  static async save(req: Request, res: Response, next: NextFunction) {
+  static async save(req: Request, res: Response) {
     const user = req.body as User
 
     await new UserServices().save(user)
@@ -25,7 +25,7 @@ export class UserController {
     res.status(201).send({ message: "User created" })
   }
 
-  static async update(req: Request, res: Response, next: NextFunction) {
+  static async update(req: Request, res: Response) {
     const user = req.body as User
     const { id } = req.params
 
@@ -34,7 +34,7 @@ export class UserController {
     res.status(201).send({ message: "User updated" })
   }
 
-  static async destroy(req: Request, res: Response, next: NextFunction) {
+  static async destroy(req: Request, res: Response) {
     const { id } = req.params
 
     await new UserServices().destroy(id)
